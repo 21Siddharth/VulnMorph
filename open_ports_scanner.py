@@ -16,7 +16,7 @@ def scan_open_ports(target):
     try:
         for port in range(1, 1025):  # Common ports
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.settimeout(0.5)
+                s.settimeout(0.1)  # Reduced timeout to 0.1 seconds
                 if s.connect_ex((hostname, port)) == 0:
                     open_ports.append(port)
         if open_ports:
