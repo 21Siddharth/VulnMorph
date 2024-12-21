@@ -1,8 +1,8 @@
 import argparse
 import json
-from xss_scanner import scan_xss
-from sqli_scanner import scan_sqli
-from open_ports_scanner import scan_open_ports
+from vulnmorph.xss_scanner import scan_xss
+from vulnmorph.sqli_scanner import scan_sqli
+from vulnmorph.open_ports_scanner import scan_open_ports
 
 # Mapping vulnerabilities to their scanner functions
 SCANNERS = {
@@ -12,14 +12,19 @@ SCANNERS = {
 }
 
 # Scan execution
-def perform_scan(target, vulnerabilities):
+def perform_scan(target, vulnerabilities, custom_payloads, num_ports):
     print(f"\n🚀 Starting scan on: {target}")
     results = {}
     for vuln in vulnerabilities:
         print(f"\n🔍 Checking for: {vuln}")
         scanner = SCANNERS.get(vuln)
         if scanner:
-            results.update(scanner(target))
+            if vuln == "Open Ports":
+                scan_result = scanner(target, num_ports=num_ports)
+            else:
+                payloads = custom_payloads.get(vuln)
+                scan_result = scanner(target, custom_payloads=payloads)
+            results.update(scan_result)
         else:
             print(f"⚠️  No scanner implemented for {vuln}.")
     print("\n✅ Scan completed!")
@@ -45,6 +50,15 @@ def main():
     parser.add_argument(
         "-a", "--all", action="store_true", help="Scan for all vulnerabilities."
     )
+    parser.add_argument(
+        "--xss-payloads", nargs='+', help="Custom payloads for XSS testing."
+    )
+    parser.add_argument(
+        "--sql-payloads", nargs='+', help="Custom payloads for SQL Injection testing."
+    )
+    parser.add_argument(
+        "--num-ports", type=int, default=1024, help="Number of ports to scan for Open Ports."
+    )
 
     args = parser.parse_args()
 
@@ -63,8 +77,13 @@ def main():
         if args.open_ports:
             vulnerabilities_to_scan.append("Open Ports")
     
+    custom_payloads = {
+        "XSS": args.xss_payloads,
+        "SQL Injection": args.sql_payloads
+    }
+
     if vulnerabilities_to_scan:
-        perform_scan(args.target, vulnerabilities_to_scan)
+        perform_scan(args.target, vulnerabilities_to_scan, custom_payloads, args.num_ports)
     else:
         print("❌ Please specify a scan type: --xss, --sql, --open-ports, or --all.")
         parser.print_help()

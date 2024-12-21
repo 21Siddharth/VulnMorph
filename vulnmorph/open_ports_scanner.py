@@ -1,7 +1,7 @@
 import socket
 from urllib.parse import urlparse
 
-def scan_open_ports(target):
+def scan_open_ports(target, num_ports=1024):
     # Extract the domain name from the URL (without the scheme and path)
     parsed_url = urlparse(target)
     hostname = parsed_url.hostname
@@ -10,13 +10,13 @@ def scan_open_ports(target):
         print("❌ Invalid URL format: Unable to extract hostname.")
         return {"Open Ports": "Error"}
 
-    print(f"Scanning {hostname} for Open Ports...")
+    print(f"Scanning {hostname} for Open Ports (first {num_ports} ports)...")
     print()
     open_ports = []
     try:
-        for port in range(1, 1025):  # Common ports
+        for port in range(1, num_ports + 1):  # Scan up to the specified number of ports
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.settimeout(0.5)
+                s.settimeout(0.1)  # Reduced timeout to 0.1 seconds
                 if s.connect_ex((hostname, port)) == 0:
                     open_ports.append(port)
         if open_ports:
