@@ -6,8 +6,8 @@ This tool scans for Cross-Site Scripting (XSS), SQL Injection, and Open Ports vu
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/ankit/vulnerability_scanner.git
-    cd vulnerability_scanner
+    git clone https://github.com/ankitsinghtd/VulnMorph.git
+    cd vulnmorph
     ```
 
 2. Install the dependencies:
