@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="vuln_morph",
+    name="vulnmorph",
     version="0.1.0",
     packages=find_packages(),
     install_requires=[
@@ -9,7 +9,7 @@ setup(
         "beautifulsoup4",
     ],
     author="Team VulnMorph",
-    author_email="your.email@example.com",
+    author_email="https://ankitsinghtd.in",
     description="A tool to scan for XSS, SQL Injection, and Open Ports vulnerabilities.",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
