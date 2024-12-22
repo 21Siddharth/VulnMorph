@@ -3,6 +3,7 @@ import json
 from vm.xss_scanner import scan_xss
 from vm.sqli_scanner import scan_sqli
 from vm.open_ports_scanner import scan_open_ports
+from vm.crawler import crawl
 
 # Mapping vulnerabilities to their scanner functions
 SCANNERS = {
@@ -12,21 +13,24 @@ SCANNERS = {
 }
 
 # Scan execution
-def perform_scan(target, vulnerabilities, custom_payloads, num_ports):
+def perform_scan(target, vulnerabilities, custom_payloads, num_ports, max_depth):
     print(f"\n🚀 Starting scan on: {target}")
     results = {}
-    for vuln in vulnerabilities:
-        print(f"\n🔍 Checking for: {vuln}")
-        scanner = SCANNERS.get(vuln)
-        if scanner:
-            if vuln == "Open Ports":
-                scan_result = scanner(target, num_ports=num_ports)
+    urls_to_scan = crawl(target, max_depth=max_depth)
+    for url in urls_to_scan:
+        print(f"\n🔍 Scanning URL: {url}")
+        for vuln in vulnerabilities:
+            print(f"\n🔍 Checking for: {vuln}")
+            scanner = SCANNERS.get(vuln)
+            if scanner:
+                if vuln == "Open Ports":
+                    scan_result = scanner(url, num_ports=num_ports)
+                else:
+                    payloads = custom_payloads.get(vuln)
+                    scan_result = scanner(url, custom_payloads=payloads)
+                results.update(scan_result)
             else:
-                payloads = custom_payloads.get(vuln)
-                scan_result = scanner(target, custom_payloads=payloads)
-            results.update(scan_result)
-        else:
-            print(f"⚠️  No scanner implemented for {vuln}.")
+                print(f"⚠️  No scanner implemented for {vuln}.")
     print("\n✅ Scan completed!")
     print("\n📊 Results:")
     print(json.dumps(results, indent=4))
@@ -61,6 +65,9 @@ def main():
     parser.add_argument(
         "--num-ports", type=int, default=1024, help="Number of ports to scan for Open Ports. Example: python -m vm.scan -t http://domain.com -op --num-ports 500"
     )
+    parser.add_argument(
+        "--max-depth", type=int, default=2, help="Maximum depth for crawling. Example: python -m vm.scan -t http://domain.com -a --max-depth 3"
+    )
 
     args = parser.parse_args()
 
@@ -85,7 +92,7 @@ def main():
     }
 
     if vulnerabilities_to_scan:
-        perform_scan(args.target, vulnerabilities_to_scan, custom_payloads, args.num_ports)
+        perform_scan(args.target, vulnerabilities_to_scan, custom_payloads, args.num_ports, args.max_depth)
     else:
         print("❌ Please specify a scan type: --xss, --sql, --open-ports, or --all.")
         parser.print_help()
