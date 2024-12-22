@@ -1,8 +1,8 @@
 import argparse
 import json
-from vulnmorph.xss_scanner import scan_xss
-from vulnmorph.sqli_scanner import scan_sqli
-from vulnmorph.open_ports_scanner import scan_open_ports
+from vm.xss_scanner import scan_xss
+from vm.sqli_scanner import scan_sqli
+from vm.open_ports_scanner import scan_open_ports
 
 # Mapping vulnerabilities to their scanner functions
 SCANNERS = {
@@ -34,30 +34,32 @@ def perform_scan(target, vulnerabilities, custom_payloads, num_ports):
 
 # Main function
 def main():
-    parser = argparse.ArgumentParser(description="Vulnerability Scanner")
-    parser.add_argument(
-        "-t", "--target", required=True, help="Target URL or IP to scan."
+    parser = argparse.ArgumentParser(
+        description="Vulnerability Scanner",
     )
     parser.add_argument(
-        "-x", "--xss", action="store_true", help="Scan for Cross-Site Scripting (XSS)."
+        "-t", "--target", required=True, help="Target URL or IP to scan. Example: http://domain.com"
     )
     parser.add_argument(
-        "-s", "--sql", action="store_true", help="Scan for SQL Injection."
+        "-x", "--xss", action="store_true", help="Scan for Cross-Site Scripting (XSS). Example: python -m vm.scan -t http://domain.com -x"
     )
     parser.add_argument(
-        "-op", "--open-ports", action="store_true", help="Scan for Open Ports."
+        "-s", "--sql", action="store_true", help="Scan for SQL Injection. Example: python -m vm.scan -t http://domain.com -s"
     )
     parser.add_argument(
-        "-a", "--all", action="store_true", help="Scan for all vulnerabilities."
+        "-op", "--open-ports", action="store_true", help="Scan for Open Ports. Example: python -m vm.scan -t http://domain.com -op"
     )
     parser.add_argument(
-        "--xss-payloads", nargs='+', help="Custom payloads for XSS testing."
+        "-a", "--all", action="store_true", help="Scan for all vulnerabilities. Example: python -m vm.scan -t http://domain.com -a"
     )
     parser.add_argument(
-        "--sql-payloads", nargs='+', help="Custom payloads for SQL Injection testing."
+        "--xss-payloads", nargs='+', help="Custom payloads for XSS testing. Example: python -m vm.scan -t http://domain.com -x --xss-payloads \"<script>alert('XSS1')</script>\" \"<img src=x onerror=alert('XSS2')>\""
     )
     parser.add_argument(
-        "--num-ports", type=int, default=1024, help="Number of ports to scan for Open Ports."
+        "--sql-payloads", nargs='+', help="Custom payloads for SQL Injection testing. Example: python -m vm.scan -t http://domain.com -s --sql-payloads \"' OR '1'='1\" \"' OR '1'='1' --\""
+    )
+    parser.add_argument(
+        "--num-ports", type=int, default=1024, help="Number of ports to scan for Open Ports. Example: python -m vm.scan -t http://domain.com -op --num-ports 500"
     )
 
     args = parser.parse_args()
