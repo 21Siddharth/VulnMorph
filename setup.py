@@ -8,6 +8,7 @@ setup(
         "requests",
         "beautifulsoup4",
     ],
+    packages=find_packages(),
     author="Team VulnMorph",
     author_email="https://ankitsinghtd.in",
     description="A tool to scan for XSS, SQL Injection, and Open Ports vulnerabilities.",

@@ -1,6 +1,6 @@
 # Vulnerability Scanner
 
-This tool scans for Cross-Site Scripting (XSS), SQL Injection, and Open Ports vulnerabilities.
+This tool scans for Cross-Site Scripting (XSS), SQL Injection, Open Ports, and performs Directory Bruteforcing.
 
 ## Installation
 
