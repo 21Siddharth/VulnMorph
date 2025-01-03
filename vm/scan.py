@@ -18,23 +18,43 @@ SCANNERS = {
 def perform_scan(target, vulnerabilities, custom_payloads, num_ports, max_depth, wordlist):
     print(f"\n🚀 Starting scan on: {target}")
     results = {}
-    urls_to_scan = crawl(target, max_depth=max_depth)
-    for url in urls_to_scan:
-        print(f"\n🔍 Scanning URL: {url}")
+
+    # Check if only open ports are being scanned
+    if vulnerabilities == ["Open Ports"]:
+        print(f"\n🔍 Scanning for Open Ports on: {target}")
+        scanner = SCANNERS.get("Open Ports")
+        if scanner:
+            scan_result = scanner(target, num_ports=num_ports)  # Only scan the target domain
+            results.update(scan_result)
+    else:
+        # Perform crawling for other vulnerabilities
+        urls_to_scan = crawl(target, max_depth=max_depth)
+        urls_to_scan.add(target)  # Ensure the target URL is included in the scan
+
+        # Perform scans based on vulnerabilities
         for vuln in vulnerabilities:
-            print(f"\n🔍 Checking for: {vuln}")
-            scanner = SCANNERS.get(vuln)
-            if scanner:
-                if vuln == "Open Ports":
-                    scan_result = scanner(url, num_ports=num_ports)
-                elif vuln == "Directory Bruteforce":
-                    scan_result = scanner(url, wordlist)
+            if vuln == "Open Ports":
+                print(f"\n🔍 Scanning for Open Ports on: {target}")
+                scanner = SCANNERS.get(vuln)
+                if scanner:
+                    scan_result = scanner(target, num_ports=num_ports)  # Only scan the target domain
+                    results.update(scan_result)
+                continue  # Skip further processing for Open Ports as it's not URL-specific
+
+            # Scan for other vulnerabilities (e.g., XSS, SQL Injection) on crawled URLs
+            for url in urls_to_scan:
+                print(f"\n🔍 Scanning URL: {url}")
+                scanner = SCANNERS.get(vuln)
+                if scanner:
+                    if vuln == "Directory Bruteforce":
+                        scan_result = scanner(url, wordlist)
+                    else:
+                        payloads = custom_payloads.get(vuln)
+                        scan_result = scanner(url, custom_payloads=payloads)
+                    results.update(scan_result)
                 else:
-                    payloads = custom_payloads.get(vuln)
-                    scan_result = scanner(url, custom_payloads=payloads)
-                results.update(scan_result)
-            else:
-                print(f"⚠️  No scanner implemented for {vuln}.")
+                    print(f"⚠️  No scanner implemented for {vuln}.")
+
     print("\n✅ Scan completed!")
     print("\n📊 Results:")
     print(json.dumps(results, indent=4))
