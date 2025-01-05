@@ -6,7 +6,7 @@ from vm.sqli_scanner import scan_sqli
 from vm.open_ports_scanner import scan_open_ports
 from vm.crawler import crawl
 from vm.dir_bruteforce import dir_bruteforce
-from vm.header_analysis import analyze_headers  # Import the new header analysis function
+from vm.security_analysis import analyze_security  # Import the new security analysis function
 
 # Mapping vulnerabilities to their scanner functions
 SCANNERS = {
@@ -14,7 +14,7 @@ SCANNERS = {
     "SQL Injection": scan_sqli,
     "Open Ports": scan_open_ports,
     "Directory Bruteforce": dir_bruteforce,
-    "HTTP Header Analysis": analyze_headers,  # Add the new scanner to the mapping
+    "Security Analysis": analyze_security,  # Add the new scanner to the mapping
 }
 
 # Scan execution
@@ -51,8 +51,8 @@ def perform_scan(target, vulnerabilities, custom_payloads, num_ports, max_depth,
                 if scanner:
                     if vuln == "Directory Bruteforce":
                         scan_result = scanner(url, wordlist)
-                    elif vuln == "HTTP Header Analysis":
-                        scan_result = scanner(url)  # No additional parameters needed for header analysis
+                    elif vuln == "Security Analysis":
+                        scan_result = scanner(url)  # No additional parameters needed for security analysis
                     else:
                         payloads = custom_payloads.get(vuln)
                         scan_result = scanner(url, custom_payloads=payloads)
@@ -96,14 +96,14 @@ def main():
     print("2. SQL Injection")
     print("3. Open Ports")
     print("4. Directory Bruteforce")
-    print("5. HTTP Header Analysis")
+    print("5. Security Analysis (Headers, SSL/TLS, CORS)")
     print("6. All")
     choices = input("Enter your choices separated by commas (e.g., 1,3): ").split(',')
 
     vulnerabilities_to_scan = []
     if '6' in choices:
         print("Performing a full scan for all vulnerabilities...")
-        vulnerabilities_to_scan = ["XSS", "SQL Injection", "Open Ports", "Directory Bruteforce", "HTTP Header Analysis"]
+        vulnerabilities_to_scan = ["XSS", "SQL Injection", "Open Ports", "Directory Bruteforce", "Security Analysis"]
     else:
         if '1' in choices:
             vulnerabilities_to_scan.append("XSS")
@@ -114,7 +114,7 @@ def main():
         if '4' in choices:
             vulnerabilities_to_scan.append("Directory Bruteforce")
         if '5' in choices:
-            vulnerabilities_to_scan.append("HTTP Header Analysis")
+            vulnerabilities_to_scan.append("Security Analysis")
 
     custom_payloads = {
         "XSS": None,
