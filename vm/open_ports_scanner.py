@@ -2,7 +2,7 @@ import socket
 from urllib.parse import urlparse
 
 def scan_open_ports(target, num_ports=1024):
-    # Extract the domain name from the URL (without the scheme and path)
+    # Extract the domain name from the URL 
     parsed_url = urlparse(target)
     hostname = parsed_url.hostname
 
