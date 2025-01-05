@@ -68,66 +68,65 @@ def main():
     parser.add_argument(
         "-t", "--target", required=True, help="Target URL or IP to scan. Example: http://domain.com"
     )
-    parser.add_argument(
-        "-x", "--xss", action="store_true", help="Scan for Cross-Site Scripting (XSS). Example: python -m vm.scan -t http://domain.com -x"
-    )
-    parser.add_argument(
-        "-s", "--sql", action="store_true", help="Scan for SQL Injection. Example: python -m vm.scan -t http://domain.com -s"
-    )
-    parser.add_argument(
-        "-op", "--open-ports", action="store_true", help="Scan for Open Ports. Example: python -m vm.scan -t http://domain.com -op"
-    )
-    parser.add_argument(
-        "-a", "--all", action="store_true", help="Scan for all vulnerabilities. Example: python -m vm.scan -t http://domain.com -a"
-    )
-    parser.add_argument(
-        "--xss-payloads", nargs='+', help="Custom payloads for XSS testing. Example: python -m vm.scan -t http://domain.com -x --xss-payloads \"<script>alert('XSS1')</script>\" \"<img src=x onerror=alert('XSS2')>\""
-    )
-    parser.add_argument(
-        "--sql-payloads", nargs='+', help="Custom payloads for SQL Injection testing. Example: python -m vm.scan -t http://domain.com -s --sql-payloads \"' OR '1'='1\" \"' OR '1'='1' --\""
-    )
-    parser.add_argument(
-        "--num-ports", type=int, default=1024, help="Number of ports to scan for Open Ports. Example: python -m vm.scan -t http://domain.com -op --num-ports 500"
-    )
-    parser.add_argument(
-        "--max-depth", type=int, default=2, help="Maximum depth for crawling. Example: python -m vm.scan -t http://domain.com -a --max-depth 3"
-    )
-    parser.add_argument(
-        "-db", "--dir-bruteforce", action="store_true", help="Perform directory bruteforce. Example: python -m vm.scan -t http://domain.com -db --wordlist wordlist.txt"
-    )
-    parser.add_argument(
-        "--wordlist", help="Wordlist file for directory bruteforce. Example: python -m vm.scan -t http://domain.com -db --wordlist wordlist.txt"
-    )
-
     args = parser.parse_args()
 
-    # print(f"🌐 Arguments received: {args}")  # Debugging output
+    print("Select the vulnerabilities to scan for:")
+    print("1. Cross-Site Scripting (XSS)")
+    print("2. SQL Injection")
+    print("3. Open Ports")
+    print("4. Directory Bruteforce")
+    print("5. All")
+    choices = input("Enter your choices separated by commas (e.g., 1,3): ").split(',')
 
-    # Determine the scans to perform
     vulnerabilities_to_scan = []
-    if args.all:
+    if '5' in choices:
         print("Performing a full scan for all vulnerabilities...")
         vulnerabilities_to_scan = ["XSS", "SQL Injection", "Open Ports", "Directory Bruteforce"]
     else:
-        if args.xss:
+        if '1' in choices:
             vulnerabilities_to_scan.append("XSS")
-        if args.sql:
+        if '2' in choices:
             vulnerabilities_to_scan.append("SQL Injection")
-        if args.open_ports:
+        if '3' in choices:
             vulnerabilities_to_scan.append("Open Ports")
-        if args.dir_bruteforce:
+        if '4' in choices:
             vulnerabilities_to_scan.append("Directory Bruteforce")
-    
+
     custom_payloads = {
-        "XSS": args.xss_payloads,
-        "SQL Injection": args.sql_payloads
+        "XSS": None,
+        "SQL Injection": None
     }
 
+    if "XSS" in vulnerabilities_to_scan:
+        xss_payloads = input("Enter custom XSS payloads separated by commas (or press Enter to use default): ")
+        if xss_payloads:
+            custom_payloads["XSS"] = xss_payloads.split(',')
+
+    if "SQL Injection" in vulnerabilities_to_scan:
+        sql_payloads = input("Enter custom SQL Injection payloads separated by commas (or press Enter to use default): ")
+        if sql_payloads:
+            custom_payloads["SQL Injection"] = sql_payloads.split(',')
+
+    num_ports = 1024
+    if "Open Ports" in vulnerabilities_to_scan:
+        num_ports = input("Enter the number of ports to scan (default is 1024): ")
+        if num_ports:
+            num_ports = int(num_ports)
+
+    max_depth = 2
+    if any(vuln in vulnerabilities_to_scan for vuln in ["XSS", "SQL Injection", "Directory Bruteforce"]):
+        max_depth = input("Enter the maximum depth for crawling (default is 2): ")
+        if max_depth:
+            max_depth = int(max_depth)
+
+    wordlist = None
+    if "Directory Bruteforce" in vulnerabilities_to_scan:
+        wordlist = input("Enter the path to the wordlist file: ")
+
     if vulnerabilities_to_scan:
-        perform_scan(args.target, vulnerabilities_to_scan, custom_payloads, args.num_ports, args.max_depth, args.wordlist)
+        perform_scan(args.target, vulnerabilities_to_scan, custom_payloads, num_ports, max_depth, wordlist)
     else:
-        print("❌ Please specify a scan type: --xss, --sql, --open-ports, --dir-bruteforce, or --all.")
-        parser.print_help()
+        print("❌ Please specify at least one scan type.")
 
 if __name__ == "__main__":
     main()
