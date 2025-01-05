@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 from vm.xss_scanner import scan_xss
 from vm.sqli_scanner import scan_sqli
 from vm.open_ports_scanner import scan_open_ports
@@ -62,7 +63,23 @@ def perform_scan(target, vulnerabilities, custom_payloads, num_ports, max_depth,
     print("\n✅ Scan completed!")
     print("\n📊 Results:")
     print(json.dumps(results, indent=4))
+
+    # Generate HTML report
+    generate_html_report(target, results)
+
     return results
+
+def generate_html_report(target, results):
+    report_filename = f"{target.replace('http://', '').replace('https://', '').replace('/', '_')}_report.html"
+    report_path = os.path.join(os.getcwd(), report_filename)
+    with open(report_path, 'w') as report_file:
+        report_file.write("<html><head><title>Scan Report</title></head><body>")
+        report_file.write(f"<h1>Scan Report for {target}</h1>")
+        report_file.write("<pre>")
+        report_file.write(json.dumps(results, indent=4))
+        report_file.write("</pre>")
+        report_file.write("</body></html>")
+    print(f"\n📄 Report saved to: {report_path}")
 
 # Main function
 def main():
