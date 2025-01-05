@@ -1,6 +1,6 @@
 import requests
 
-def dir_bruteforce(target, wordlist, mode="directory"):
+def bruteforce_scan(target, wordlist, mode="directory"):
     print(f"Starting {mode} bruteforce on {target}...")
     found_items = []
     try:
