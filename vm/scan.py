@@ -5,7 +5,7 @@ from vm.xss_scanner import scan_xss
 from vm.sqli_scanner import scan_sqli
 from vm.open_ports_scanner import scan_open_ports
 from vm.crawler import crawl
-from vm.dir_bruteforce import dir_bruteforce
+from vm.bruteforce import bruteforce_scan  # Updated import
 from vm.security_analysis import analyze_security  # Import the new security analysis function
 
 # Mapping vulnerabilities to their scanner functions
@@ -13,22 +13,23 @@ SCANNERS = {
     "XSS": scan_xss,
     "SQL Injection": scan_sqli,
     "Open Ports": scan_open_ports,
-    "Directory Bruteforce": dir_bruteforce,
+    "Directory Bruteforce": bruteforce_scan,  # Updated mapping
     "Security Analysis": analyze_security,  # Add the new scanner to the mapping
 }
 
 # Scan execution
-def perform_scan(target, vulnerabilities, custom_payloads, num_ports, max_depth, wordlist):
+def perform_scan(target, vulnerabilities, custom_payloads, num_ports, max_depth, wordlist, bruteforce_mode):
     print(f"\n🚀 Starting scan on: {target}")
     results = {}
 
-    # Check if only open ports are being scanned
-    if vulnerabilities == ["Open Ports"]:
-        print(f"\n🔍 Scanning for Open Ports on: {target}")
-        scanner = SCANNERS.get("Open Ports")
-        if scanner:
-            scan_result = scanner(target, num_ports=num_ports)  # Only scan the target domain
-            results.update(scan_result)
+    # Check if only open ports or security analysis are being scanned
+    if vulnerabilities == ["Open Ports"] or vulnerabilities == ["Security Analysis"]:
+        for vuln in vulnerabilities:
+            print(f"\n🔍 Scanning for {vuln} on: {target}")
+            scanner = SCANNERS.get(vuln)
+            if scanner:
+                scan_result = scanner(target) if vuln == "Security Analysis" else scanner(target, num_ports=num_ports)
+                results.update(scan_result)
     else:
         # Perform crawling for other vulnerabilities
         urls_to_scan = crawl(target, max_depth=max_depth)
@@ -36,13 +37,13 @@ def perform_scan(target, vulnerabilities, custom_payloads, num_ports, max_depth,
 
         # Perform scans based on vulnerabilities
         for vuln in vulnerabilities:
-            if vuln == "Open Ports":
-                print(f"\n🔍 Scanning for Open Ports on: {target}")
+            if vuln == "Open Ports" or vuln == "Security Analysis":
+                print(f"\n🔍 Scanning for {vuln} on: {target}")
                 scanner = SCANNERS.get(vuln)
                 if scanner:
-                    scan_result = scanner(target, num_ports=num_ports)  # Only scan the target domain
+                    scan_result = scanner(target) if vuln == "Security Analysis" else scanner(target, num_ports=num_ports)
                     results.update(scan_result)
-                continue  # Skip further processing for Open Ports as it's not URL-specific
+                continue  # Skip further processing for Open Ports and Security Analysis as they're not URL-specific
 
             # Scan for other vulnerabilities (e.g., XSS, SQL Injection) on crawled URLs
             for url in urls_to_scan:
@@ -50,9 +51,7 @@ def perform_scan(target, vulnerabilities, custom_payloads, num_ports, max_depth,
                 scanner = SCANNERS.get(vuln)
                 if scanner:
                     if vuln == "Directory Bruteforce":
-                        scan_result = scanner(url, wordlist)
-                    elif vuln == "Security Analysis":
-                        scan_result = scanner(url)  # No additional parameters needed for security analysis
+                        scan_result = scanner(url, wordlist, mode=bruteforce_mode)
                     else:
                         payloads = custom_payloads.get(vuln)
                         scan_result = scanner(url, custom_payloads=payloads)
@@ -95,9 +94,9 @@ def main():
     print("1. Cross-Site Scripting (XSS)")
     print("2. SQL Injection")
     print("3. Open Ports")
-    print("4. Directory Bruteforce")
-    print("5. Security Analysis (Headers, SSL/TLS, CORS)")
-    print("6. All")
+    print("4. Directory/Subdomain Bruteforce")
+    print("5. Security Analysis (Headers, SSL/TLS, CORS, vulerable js and secrets)")
+    print("6. All (! Might take longer to complete !)")
     choices = input("Enter your choices separated by commas (e.g., 1,3): ").split(',')
 
     vulnerabilities_to_scan = []
@@ -144,11 +143,13 @@ def main():
             max_depth = int(max_depth)
 
     wordlist = None
+    bruteforce_mode = "directory"
     if "Directory Bruteforce" in vulnerabilities_to_scan:
+        bruteforce_mode = input("Enter the mode for bruteforce (directory/subdomain): ").strip().lower()
         wordlist = input("Enter the path to the wordlist file: ")
 
     if vulnerabilities_to_scan:
-        perform_scan(args.target, vulnerabilities_to_scan, custom_payloads, num_ports, max_depth, wordlist)
+        perform_scan(args.target, vulnerabilities_to_scan, custom_payloads, num_ports, max_depth, wordlist, bruteforce_mode)
     else:
         print("❌ Please specify at least one scan type.")
 

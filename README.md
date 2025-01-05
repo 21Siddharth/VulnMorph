@@ -18,7 +18,7 @@ This tool scans for Cross-Site Scripting (XSS), SQL Injection, Open Ports, and p
 ## Usage
 
 ```sh
-python -m vm.scan -t <target_url> [options]
+python -m vm.scan -t <target_url>
 
 -h for help
 ```
