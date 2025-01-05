@@ -1,6 +1,6 @@
 # Vulnerability Scanner
 
-This tool scans for Cross-Site Scripting (XSS), SQL Injection, Open Ports, and performs Directory Bruteforcing.
+This tool scans for Cross-Site Scripting (XSS), SQL Injection, Open Ports, performs directory and subdomain Bruteforcing, Security Header Analysis, Secrets Detection and Report Generation.
 
 ## Installation
 
@@ -18,7 +18,7 @@ This tool scans for Cross-Site Scripting (XSS), SQL Injection, Open Ports, and p
 ## Usage
 
 ```sh
-python -m vm.scan -t <target_url> [options]
+python -m vm.scan -t <target_url>
 
 -h for help
 ```
